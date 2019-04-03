@@ -22,7 +22,7 @@ public class Matrix {
     private int getRows(){return 4;}
     private int getColumns(){return 4;}
     private double getElement(int rows, int columns){return m[rows][columns];}
-    private void assignElement(double value, int i, int j){m[i][j] = value;}
+    public void assignElement(double value, int i, int j){m[i][j] = value;}
 
     public static Matrix multiply(Matrix x, Matrix y)
     {
