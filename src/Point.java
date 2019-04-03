@@ -14,9 +14,10 @@ public class Point {
         this.z = z;
     }
 
+
     /**
      *
-     * @return
+     * @return x
      */
     public double getX() {
         return this.x;
@@ -24,11 +25,16 @@ public class Point {
 
     /**
      *
-     * @return
+     * @return y
      */
     public double getY() {
         return this.y;
     }
+
+    /**
+     *
+     * @return z
+     */
     public double getZ(){
         return this.z;
     }
