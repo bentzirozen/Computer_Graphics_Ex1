@@ -29,9 +29,6 @@ public class View {
         scene.readScn(new File("ex1.scn"));
         scene.readViw(new File("ex1.viw"));
         Frame myFrame = new Frame("Exercise1");
-        MyCanvas myCanvas = new MyCanvas(myScene);
-        myFrame.add(myCanvas);
-
         WindowAdapter myWindowAdapter = new WindowAdapter(){
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
@@ -44,64 +41,6 @@ public class View {
     }
     public void setScene(Scene scene){
         myScene = scene;
-    }
-
-}
-
-class MyCanvas extends Canvas implements MouseListener,  MouseMotionListener {
-    private Scene scene;
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-
-    public MyCanvas(Scene scene) {
-        setSize(scene.getScreenWidth()+40, scene.getScreenHeight()+40);
-        this.scene = scene;
-        addMouseListener(this);
-        addMouseMotionListener(this);
-    }
-
-
-    public void paint(Graphics g) {
-        g.setColor(Color.blue);
-        g.drawRect(0,20,this.scene.getScreenWidth()-40,this.scene.getScreenHeight()-40);
-    }
-
-    public void mouseClicked(MouseEvent arg0) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void mousePressed(MouseEvent arg0) {
-        // TODO Auto-generated method stub
-        //
-
-
-    }
-
-    public void mouseReleased(MouseEvent arg0) {
-        // TODO Auto-generated method stub
-    }
-
-    public void mouseDragged(MouseEvent arg0) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void mouseMoved(MouseEvent arg0) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void mouseEntered(MouseEvent arg0) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void mouseExited(MouseEvent arg0) {
-        // TODO Auto-generated method stub
-
     }
 
 }

@@ -9,11 +9,11 @@ public class Scene {
 /*
     Scene class , create the vertice and edge list
  */
-    private ArrayList<Point> verticeList;
+    private ArrayList<Point3D> verticeList;
     private ArrayList<Line> edgeList;
-    private Point cameraPos;
-    private Point cameraLookAt;
-    private Point cameraUpDirection;
+    private Point3D cameraPos;
+    private Point3D cameraLookAt;
+    private Point3D cameraUpDirection;
     private double leftBound;
     private double rightBound;
     private double bottomBound;
@@ -29,7 +29,7 @@ public class Scene {
     }
 
     public void readScn(File scnFile) throws IOException {
-        Point x;
+        Point3D x;
         Line line;
         BufferedReader br = new BufferedReader(new FileReader(scnFile));
         String[] cordinates;
@@ -39,7 +39,7 @@ public class Scene {
         for (int i=0;i<index;i++) {
             st=br.readLine();
             cordinates = st.split(" ");
-            x = new Point(Double.parseDouble(cordinates[0]), Double.parseDouble(cordinates[1]),
+            x = new Point3D(Double.parseDouble(cordinates[0]), Double.parseDouble(cordinates[1]),
                     Double.parseDouble(cordinates[2]));
             verticeList.add(x);
         }
@@ -48,10 +48,8 @@ public class Scene {
         for (int i=0;i<index;i++){
             st=br.readLine();
             cordinates = st.split(" ");
-            Point point1=verticeList.get(Integer.parseInt(cordinates[0]));
-            Point point2=verticeList.get(Integer.parseInt(cordinates[1]));
-            line = new Line(point1,point2);
-            edgeList.add(line);
+            Point3D point1=verticeList.get(Integer.parseInt(cordinates[0]));
+            Point3D point2=verticeList.get(Integer.parseInt(cordinates[1]));
         }
     }
 
@@ -63,15 +61,15 @@ public class Scene {
             cordinates = st.split(" ");
             switch (cordinates[0]) {
                 case "Position":
-                    this.cameraPos = new Point(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
+                    this.cameraPos = new Point3D(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
                             Double.parseDouble(cordinates[3]));
                     break;
                 case "LookAt":
-                    this.cameraLookAt = new Point(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
+                    this.cameraLookAt = new Point3D(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
                             Double.parseDouble(cordinates[3]));
                     break;
                 case "Up":
-                    this.cameraUpDirection = new Point(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
+                    this.cameraUpDirection = new Point3D(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
                             Double.parseDouble(cordinates[3]));
                     break;
                 case "Window":
@@ -103,7 +101,7 @@ public class Scene {
         return screenHeight;
     }
 
-    public ArrayList<Point> getVerticeList() {
+    public ArrayList<Point3D> getVerticeList() {
         return verticeList;
     }
 
@@ -111,15 +109,15 @@ public class Scene {
         return edgeList;
     }
 
-    public Point getCameraPos() {
+    public Point3D getCameraPos() {
         return cameraPos;
     }
 
-    public Point getCameraLookAt() {
+    public Point3D getCameraLookAt() {
         return cameraLookAt;
     }
 
-    public Point getCameraUpDirection() {
+    public Point3D getCameraUpDirection() {
         return cameraUpDirection;
     }
 
