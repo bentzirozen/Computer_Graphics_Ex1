@@ -6,7 +6,7 @@ public class Matrix {
     private int numberOfRows;
     private int numberOfColumns;
 
-//Constructors: Two constructors were created. The first, takes two ints as parameters for the shape of the matrix and initializes the elements to 0. The second has no parameters, but instead asks the user to supply the shape and element values via scanner.
+    public double getElement(int rows, int columns){return m[rows][columns];}
 
     public Matrix(int rows , int columns) {
         rows = 4;
@@ -19,12 +19,11 @@ public class Matrix {
             }
         }
     }
-    private int getRows(){return 4;}
-    private int getColumns(){return 4;}
-    private double getElement(int rows, int columns){return m[rows][columns];}
+    public int getRows(){return 4;}
+    public int getColumns(){return 4;}
     public void assignElement(double value, int i, int j){m[i][j] = value;}
 
-    public static Matrix multiply(Matrix x, Matrix y)
+    public Matrix multiply(Matrix x, Matrix y)
     {
         //z is the new matrix created.
         Matrix z = new Matrix(x.getRows(), y.getColumns());
@@ -45,5 +44,15 @@ public class Matrix {
         }
         //return the new matrix.
         return z;
+    }
+
+    public static void main( String [] args){
+        Matrix m = new Matrix(4,4);
+        for(int i=0; i < m.getRows(); i++){
+            for(int j=0; j<m.getColumns(); j++) {
+                System.out.println(m.getElement(i, j) );
+            }
+            System.out.println("\n");
+        }
     }
 }
