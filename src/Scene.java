@@ -50,10 +50,11 @@ public class Scene {
             cordinates = st.split(" ");
             Point3D point1=verticeList.get(Integer.parseInt(cordinates[0]));
             Point3D point2=verticeList.get(Integer.parseInt(cordinates[1]));
+            this.edgeList.add(new Line(point1,point2));
         }
     }
 
-    public void readViw(File viwFile)throws Exception {
+    public void readViw(File viwFile)throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(viwFile));
         String[] cordinates = {};
         String st = null;
@@ -83,7 +84,7 @@ public class Scene {
                     this.screenHeight = Integer.parseInt(cordinates[2]);
                     break;
                 default:
-                    throw new Exception("this setting dont exist in viw file!\n");
+                    throw new IOException("this setting dont exist in viw file!\n");
             }
         }
     }

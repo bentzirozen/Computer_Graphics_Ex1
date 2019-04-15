@@ -12,19 +12,24 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     private boolean clip;
     private Scene scene;
 
-    public MyCanvas() {
+    public MyCanvas(Scene scene) {
         setSize(420, 420);
         addKeyListener(this);
         addMouseListener(this);
         addMouseMotionListener(this);
-        this.scene = new Scene();
+        this.scene = scene;
         this.clip = false;
     }
 
     @Override
     public void paint(Graphics g) {
-        List<Point3D> newVL = new ArrayList<>();
-
+        List<Line> newVL = scene.getEdgeList();
+        for(int i=0;i<newVL.size();i++){
+            Line line = newVL.get(i);
+            Point3D p1 = line.getStart();
+            Point3D p2 = line.getEnd();
+            g.drawLine((int)p1.getX()*50, (int)p1.getY()*50,(int)p2.getX()*50,(int)p2.getY()*50);
+        }
     }
 
     @Override
@@ -48,7 +53,11 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
                         e1.printStackTrace();
                     }
                 } else if (extension.equals("viw")) {
-                    //TODO
+                    try {
+                        this.scene.readViw(new File(path));
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
                 }
 
                 break;
