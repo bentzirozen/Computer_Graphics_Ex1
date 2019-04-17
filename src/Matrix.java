@@ -48,6 +48,17 @@ public class Matrix {
         //return the new matrix.
         return z;
     }
+    public Matrix transpose() {
+        int rows = this.getRows();
+        int cols = this.getCols();
+        double[][] mat = new double[cols][rows];
+        for (int i = 0; i < rows; i++)
+            for (int j = 0; j < cols; j++)
+                mat[j][i] = this.m[i][j];
+        return new Matrix(mat);
+    }
+
+
     public int getRows(){
         return this.m.length;
     }

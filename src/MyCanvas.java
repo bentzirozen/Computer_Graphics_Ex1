@@ -9,30 +9,50 @@ import java.util.List;
 import static java.lang.System.exit;
 
 public class MyCanvas extends Canvas implements KeyListener, MouseListener, MouseMotionListener {
-    private boolean clip;
+    private static final int MARGIN = 40;
+    private static final long serialVersionUID = 1L;
+
     private Scene scene;
+    private View view;
+    private boolean clip=false;
 
-    public MyCanvas(Scene scene) {
-        setSize(420, 420);
-        addKeyListener(this);
-        addMouseListener(this);
-        addMouseMotionListener(this);
-        this.scene = scene;
-        this.clip = false;
-    }
+    Point pStart, pEnd;
+    boolean bFlag = false;
 
-    @Override
-    public void paint(Graphics g) {
-        List<Line> newVL = scene.getEdgeList();
-        for(int i=0;i<newVL.size();i++){
-            Line line = newVL.get(i);
-            Point3D p1 = line.getStart();
-            Point3D p2 = line.getEnd();
-            g.drawLine((int)p1.getX()*50, (int)p1.getY()*50,(int)p2.getX()*50,(int)p2.getY()*50);
+    public MyCanvas() {
+        try {
+
+
+            // view and scene
+            this.view = new View();
+            this.view.readViw(new File("ex1.viw"));
+            this.scene = new Scene();
+            this.scene.readScn(new File("ex1.scn"));
+
+            setSize(view.getScreenWidth()+ MARGIN, view.getScreenHeight() + MARGIN);
+            addMouseListener(this);
+            addMouseMotionListener(this);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
-    @Override
+    public void paint(Graphics g) {
+        this.scene.from3Dto2D();
+        List<Line> edgeList = this.scene.getEdgeList();
+        g.setColor(Color.blue);
+
+        // none sense values
+
+        for (Line e : edgeList) {
+            g.drawLine(50 * (int) e.getStart().getX(), 70 * (int) e.getStart().getY(),
+                    100 * (int) e.getEnd().getX(), 60 * (int) e.getEnd().getY());
+        }
+    }
+
+
+        @Override
     public void keyTyped(KeyEvent e) {
         char key = Character.toLowerCase(e.getKeyChar());
 
@@ -54,7 +74,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
                     }
                 } else if (extension.equals("viw")) {
                     try {
-                        this.scene.readViw(new File(path));
+                        this.view.readViw(new File(path));
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }

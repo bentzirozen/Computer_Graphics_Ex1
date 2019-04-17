@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Scene {
 /*
@@ -11,21 +12,12 @@ public class Scene {
  */
     private ArrayList<Point3D> verticeList;
     private ArrayList<Line> edgeList;
-    private Point3D cameraPos;
-    private Point3D cameraLookAt;
-    private Point3D cameraUpDirection;
-    private double leftBound;
-    private double rightBound;
-    private double bottomBound;
-    private double topBound;
-    private int screenWidth;
-    private int screenHeight;
+
     private View view;
 
     Scene(){
         verticeList = new ArrayList<>();
         edgeList = new ArrayList<>();
-        view = new View(this);
     }
 
     public void readScn(File scnFile) throws IOException {
@@ -53,53 +45,19 @@ public class Scene {
             this.edgeList.add(new Line(point1,point2));
         }
     }
-
-    public void readViw(File viwFile)throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(viwFile));
-        String[] cordinates = {};
-        String st = null;
-        while ((st=br.readLine())!=null) {
-            cordinates = st.split(" ");
-            switch (cordinates[0]) {
-                case "Position":
-                    this.cameraPos = new Point3D(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
-                            Double.parseDouble(cordinates[3]));
-                    break;
-                case "LookAt":
-                    this.cameraLookAt = new Point3D(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
-                            Double.parseDouble(cordinates[3]));
-                    break;
-                case "Up":
-                    this.cameraUpDirection = new Point3D(Double.parseDouble(cordinates[1]), Double.parseDouble(cordinates[2]),
-                            Double.parseDouble(cordinates[3]));
-                    break;
-                case "Window":
-                    this.leftBound = Double.parseDouble(cordinates[1]);
-                    this.rightBound = Double.parseDouble(cordinates[2]);
-                    this.bottomBound = Double.parseDouble(cordinates[3]);
-                    this.topBound = Double.parseDouble(cordinates[4]);
-                    break;
-                case "Viewport":
-                    this.screenWidth = Integer.parseInt(cordinates[1]);
-                    this.screenHeight = Integer.parseInt(cordinates[2]);
-                    break;
-                default:
-                    throw new IOException("this setting dont exist in viw file!\n");
-            }
+    public void from3Dto2D() {
+        ArrayList<Point3D> newList = new ArrayList<>(this.verticeList.size());
+        for (Point3D p : this.verticeList) {
+            Point3D p1 = Tranforamtions.orthographicProjection(p);
+            newList.add(p1);
         }
+
+        this.verticeList = newList;
     }
+
     public static void main(String[] args)throws Exception{
         Scene scene = new Scene();
         scene.readScn(new File("ex1.scn"));
-        scene.readViw(new File("ex1.viw"));
-    }
-
-    public int getScreenWidth() {
-        return screenWidth;
-    }
-
-    public int getScreenHeight() {
-        return screenHeight;
     }
 
     public ArrayList<Point3D> getVerticeList() {
@@ -108,34 +66,6 @@ public class Scene {
 
     public ArrayList<Line> getEdgeList() {
         return edgeList;
-    }
-
-    public Point3D getCameraPos() {
-        return cameraPos;
-    }
-
-    public Point3D getCameraLookAt() {
-        return cameraLookAt;
-    }
-
-    public Point3D getCameraUpDirection() {
-        return cameraUpDirection;
-    }
-
-    public double getBottomBound() {
-        return bottomBound;
-    }
-
-    public double getLeftBound() {
-        return leftBound;
-    }
-
-    public double getRightBound() {
-        return rightBound;
-    }
-
-    public double getTopBound() {
-        return topBound;
     }
 
     public View getView() {
