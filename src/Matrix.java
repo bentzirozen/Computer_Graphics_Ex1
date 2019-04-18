@@ -67,6 +67,16 @@ public class Matrix {
         return this.m[0].length;
     }
 
+    //reset the matrix to the identity matrix.
+    public Matrix reset() {
+        Matrix i = new Matrix(4,4);
+        //put 1 on the diagonal.
+        for (int j = 0; j < 4; j++) {
+            i.assignElement(1, j, j);
+        }
+        return i;
+    }
+
     public static void main( String [] args){
 
     }
