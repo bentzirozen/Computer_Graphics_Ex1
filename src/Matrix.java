@@ -9,11 +9,11 @@ public class Matrix {
 
     public Matrix(int rows , int columns) {
         m = new double[rows][columns];
-
+        if(rows!=columns){
+            return;
+        }
         for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
-                m[i][j] = 0;
-            }
+            m[i][i]=1;
         }
     }
     public Matrix(double[][] m) {
@@ -24,7 +24,7 @@ public class Matrix {
     }
     public void assignElement(double value, int i, int j){m[i][j] = value;}
 
-    public Matrix multiply(Matrix x, Matrix y)
+    public static Matrix multiply(Matrix x, Matrix y)
     {
         int rows = x.getRows();
         int cols = y.getCols();

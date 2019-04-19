@@ -11,7 +11,7 @@ public class Scene {
     Scene class , create the vertice and edge list
  */
     private ArrayList<Point3D> verticeList;
-    private ArrayList<Line> edgeList;
+    private ArrayList<int[]> edgeList;
 
     private View view;
 
@@ -40,9 +40,8 @@ public class Scene {
         for (int i=0;i<index;i++){
             st=br.readLine();
             cordinates = st.split(" ");
-            Point3D point1=verticeList.get(Integer.parseInt(cordinates[0]));
-            Point3D point2=verticeList.get(Integer.parseInt(cordinates[1]));
-            this.edgeList.add(new Line(point1,point2));
+            int[]edges={Integer.parseInt(cordinates[0]),Integer.parseInt(cordinates[1])};
+            edgeList.add(edges);
         }
     }
     public void from3Dto2D() {
@@ -64,7 +63,7 @@ public class Scene {
         return verticeList;
     }
 
-    public ArrayList<Line> getEdgeList() {
+    public ArrayList<int[]> getEdgeList() {
         return edgeList;
     }
 

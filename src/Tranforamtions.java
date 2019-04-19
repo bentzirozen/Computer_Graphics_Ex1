@@ -1,6 +1,8 @@
 public class Tranforamtions {
     private View v;
-
+    public Tranforamtions(View v){
+        this.v= v ;
+    }
     public Matrix Translation(double tx, double ty, double tz) {
         //create a new matrix initialized with 0.
         Matrix m = new Matrix(4, 4);
@@ -86,6 +88,10 @@ public class Tranforamtions {
         Matrix result = matrix.multiply(matrix, vectorToMatrix(vertexToVector(v)));
         return vectorToVertex(matrixToVector(result));
     }
+    public Matrix projection(){
+        double[][] m = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 1}};
+        return new Matrix(m);
+    }
 
     public Matrix t1() {
         //create a new matrix initialized with 0.
@@ -97,7 +103,7 @@ public class Tranforamtions {
         double wcx = v.getLeftBound() + (v.getRightBound() - v.getLeftBound()) / 2;
         double wcy = v.getBottomBound() + (v.getTopBound() - v.getBottomBound()) / 2;
         m.assignElement(-wcx, 0, 3);
-        m.assignElement(-wcx, 1, 3);
+        m.assignElement(-wcy, 1, 3);
         return m;
     }
 
@@ -116,20 +122,13 @@ public class Tranforamtions {
     public Matrix s() {
         //create a new matrix initialized with 0.
         Matrix m = new Matrix(4, 4);
-        //put 1 on the diagonal.
-        for (int i = 2; i < 4; i++) {
-            m.assignElement(1, i, i);
-        }
-        m.assignElement(v.getScreenWidth() / (v.getRightBound() - v.getLeftBound()), 0, 0);
-        m.assignElement(v.getScreenHeight() / (v.getTopBound() - v.getBottomBound()), 1, 1);
+        m = Scale(this.v.getScreenWidth() / (v.getRightBound() - v.getLeftBound()), - v.getScreenHeight()
+                / (v.getTopBound() - v.getBottomBound()), 1);
         return m;
     }
 
     public Matrix mv2(Matrix t2, Matrix s, Matrix t1) {
-        Matrix mv2 = new Matrix(4, 4);
-        mv2.multiply(t2, s);
-        mv2.multiply(mv2, t1);
-        return mv2;
+        return Matrix.multiply(t2,Matrix.multiply(s,t1));
     }
 
     public Matrix mv1(Point3D position, Point3D lookAt, Point3D up) {
