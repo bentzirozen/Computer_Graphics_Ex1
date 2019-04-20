@@ -49,7 +49,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             addMouseListener(this);
             addMouseMotionListener(this);
             addKeyListener(this);
-            this.center = new Point3D((screenWidth/2)+20,(screenHeight/2)+20,0);
+            this.center = new Point3D((screenWidth/2)+MARGIN/2,(screenHeight/2)+MARGIN/2,0);
             this.axisRotate = 'z';
             this.reloadChanges();
 
@@ -60,7 +60,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     }
 
     public void paint(Graphics g) {
-        g.drawRect(20, 20, screenWidth, screenHeight);
+        g.drawRect(MARGIN/2, MARGIN/2, screenWidth, screenHeight);
         TrM = Matrix.multiply(CT, TT);
         ArrayList<Point2Di> vertexesTag = new ArrayList<>();
         for (Point3D p : vectices) {
@@ -86,9 +86,11 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         //not on borders
         if (x < 20 || y < 20 || x > screenWidth + 20 || y > screenHeight + 20) {
             return '0';
-        } else if(x >= screenWidth / 3 +20 && x <= 2 * screenWidth / 3 + 20 && y >= screenHeight / 3 +20 && y < 2 * screenHeight / 3 + 20) {
+        } else if((x >= (screenWidth / 3)+20) && x <= 2 * screenWidth / 3 + 20 &&
+                y >= screenHeight / 3 +20 && y < 2 * screenHeight / 3 + 20) {
             return 't';
-        } else if((x < screenWidth / 3 +20 || x > 2 * screenWidth / 3 + 20) && (y < screenHeight / 3 + 20 || y> 2 * screenHeight / 3 +20)) {
+        } else if((x < (screenWidth / 3) +20 || x > (2 * screenWidth) / 3 + 20) &&
+                (y < (screenHeight / 3) + 20 || y> (2 * screenHeight) / 3 +20)) {
             return 'r';
         } else{
             return 's';
@@ -99,10 +101,10 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             case 't':
                 doTranslation();
                 break;
-            case 'R':
-                //TODO rotation
+            case 'r':
+                doRotation();
                 break;
-            case 'S':
+            case 's':
                 doScale();
                 break;
             default:
@@ -114,10 +116,20 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         CT = tranforamtions.Translation(dx - px, dy - py,0);
     }
     private void doScale(){
-        double radiusPStart = Math.hypot(px-center.getX(), py-center.getY());
-        double radiusPEnd = Math.hypot(dx-center.getX(),dy-center.getY());
-        double scaleParameter = radiusPEnd / radiusPStart;
+        double distStart = Math.hypot(px-center.getX(), py-center.getY());
+        double distEnd = Math.hypot(dx-center.getX(),dy-center.getY());
+        double scaleParameter = distEnd / distStart;
         CT = tranforamtions.Scale(scaleParameter, scaleParameter, scaleParameter);
+        CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
+                Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
+    }
+    private void doRotation(){
+        Vector startVec = new Vector(px-center.getX(),py-center.getY(),0);
+        Vector endVec = new Vector(dx-center.getX(),dy-center.getY(),0);
+        double angleStart = Vector.angle(startVec);
+        double angleEnd = Vector.angle(endVec);
+        double angleFinish = angleEnd - angleStart;
+        CT = tranforamtions.Rotation(angleFinish, axisRotate);
         CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
                 Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
     }
@@ -152,6 +164,8 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
                 break;
             case 'r':
+                reloadChanges();
+                repaint();
                 break;
             case 'x':
                 this.axisRotate = 'x';
@@ -172,7 +186,6 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        System.out.println("Mouse Dragged");
         dx = e.getX();
         dy = e.getY();
         oper();
@@ -205,7 +218,9 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void mouseReleased(MouseEvent e) {
-
+        TT = TrM;
+        CT = new Matrix(4,4);
+        this.repaint();
     }
 
     @Override

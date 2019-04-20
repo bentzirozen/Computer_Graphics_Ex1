@@ -26,19 +26,19 @@ public class Tranforamtions {
         return m;
     }
 
-    public Matrix Rotation(double angle, int axis) {
+    public Matrix Rotation(double angle, char axis) {
         //create a new matrix initialized with 0.
         Matrix m = new Matrix(4, 4);
         m.assignElement(1, 3, 3);
         //rotation in the x axis
-        if (axis == 0) {
+        if (axis == 'x') {
             m.assignElement(1, 0, 0);
             m.assignElement(Math.cos(Math.toRadians(angle)), 1, 1);
             m.assignElement(Math.cos(Math.toRadians(angle)), 2, 2);
             m.assignElement(-(Math.sin(Math.toRadians(angle))), 1, 2);
             m.assignElement(Math.sin(Math.toRadians(angle)), 2, 1);
         }//rotation in the y axis
-        else if (axis == 1) {
+        else if (axis == 'y') {
             m.assignElement(1, 1, 1);
             m.assignElement(Math.cos(Math.toRadians(angle)), 0, 0);
             m.assignElement(Math.cos(Math.toRadians(angle)), 2, 2);
@@ -46,7 +46,7 @@ public class Tranforamtions {
             m.assignElement(Math.sin(Math.toRadians(angle)), 2, 0);
 
         }//rotation in the z axis
-        //axis == 2.
+        //axis == z.
         else {
             m.assignElement(1, 2, 2);
             m.assignElement(Math.cos(Math.toRadians(angle)), 0, 0);
@@ -176,7 +176,7 @@ public class Tranforamtions {
         return tl;
     }
 
-    public Matrix ct(Matrix t2, int axis, double angle, Matrix t1){
+    public Matrix ct(Matrix t2, char axis, double angle, Matrix t1){
         Matrix ct = t2.multiply(t2,Rotation(angle, axis));
         ct = ct.multiply(ct,t1);
         return ct;

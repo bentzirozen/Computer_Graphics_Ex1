@@ -64,9 +64,13 @@ public class Vector {
         return new Vector(xRes, yRes, zRes);
     }
 
-    public static double angle(Vector v1, Vector v2) {
-        double cAngle = dotProduct(v1, v2) / (v1.magnitude() * v2.magnitude());
-        return Math.acos(cAngle);
+    public static double angle(Vector v) {
+        double angle;
+        float RAD2DEG = 180.0f / (float)Math.PI;
+        // atan2 receives first Y second X
+        angle = Math.atan2(v.getY(), v.getX()) * RAD2DEG;
+        if (angle < 0) angle += 360.0f;
+        return angle;
     }
 
     public double magnitude() {
