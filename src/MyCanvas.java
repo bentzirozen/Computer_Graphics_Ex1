@@ -33,8 +33,6 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     public MyCanvas() {
         try {
-
-
             // view and scene
             this.view = new View();
             this.view.readViw(new File("ex1.viw"));
@@ -210,7 +208,6 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void mousePressed(MouseEvent e) {
-        System.out.println("Mouse Pressed");
         px = e.getX();
         py = e.getY();
         currentOper = wherePressed(px, py);
