@@ -98,6 +98,12 @@ public class View {
     public double getTopBound() {
         return topBound;
     }
+    public void setScreenWidth(int width){
+        this.screenWidth = width;
+    }
+    public void setScreenHeight(int height){
+        this.screenHeight = height;
+    }
     /**
      * @param args
      */

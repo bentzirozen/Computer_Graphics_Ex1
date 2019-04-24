@@ -3,6 +3,7 @@ import com.sun.xml.internal.bind.v2.TODO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +12,7 @@ import java.util.List;
 
 import static java.lang.System.exit;
 
-public class MyCanvas extends Canvas implements KeyListener, MouseListener, MouseMotionListener {
+public class MyCanvas extends Canvas implements KeyListener, MouseListener, MouseMotionListener,ComponentListener  {
     private static final int MARGIN = 40;
     private static final long serialVersionUID = 1L;
     private ArrayList<Point3D> vectices = new ArrayList<>();
@@ -19,7 +20,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     private Scene scene;
     private View view;
     private Tranforamtions tranforamtions;
-    private int screenWidth,screenHeight;
+    private int screenHeight,screenWidth;
     private Point3D center;
     private Matrix VM1, P, CT, TT, T1, T2, AT, VM2,TrM;
     private boolean clip=false;
@@ -47,8 +48,10 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             addMouseListener(this);
             addMouseMotionListener(this);
             addKeyListener(this);
+            addComponentListener(this);
             this.center = new Point3D((screenWidth/2)+MARGIN/2,(screenHeight/2)+MARGIN/2,0);
             this.axisRotate = 'z';
+            this.clip = false;
             this.reloadChanges();
 
             
@@ -70,7 +73,15 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         for (int[] p : edgeList) {
             Point2Di startLine = vertexesTag.get(p[0]);
             Point2Di endLine = vertexesTag.get(p[1]);
-            g.drawLine((int)startLine.getX(), (int)startLine.getY(), (int)endLine.getX(), (int)endLine.getY());
+            Line2D.Double line = new Line2D.Double();
+            line.setLine(startLine.getX(),startLine.getY(),endLine.getX(),endLine.getY());
+            if (clip) {
+                if (clipping(line)) {
+                    g.drawLine((int)line.x1, (int)line.y1,(int) line.x2, (int)line.y2);
+                }
+            } else {
+                g.drawLine((int)line.x1, (int)line.y1,(int) line.x2, (int)line.y2);
+            }
         }
     }
 
@@ -138,7 +149,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
         switch (key) {
             case 'c':
-                this.clip = true;
+                this.clip = !this.clip;
                 this.repaint();
                 break;
             case 'l':
@@ -200,6 +211,101 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         this.TrM = Matrix.multiply(VM2, (Matrix.multiply(P, Matrix.multiply(CT, (Matrix.multiply(TT, VM1))))));
         TT = TrM;
     }
+    private boolean clipping(Line2D.Double line) {
+        int[] bitsS = initBits(line.x1,line.y1);
+        int[] bitsE = initBits(line.x2,line.y2);
+        int[] bitsResultAnd = {0, 0, 0, 0};
+        for (int i = 0; i < 4; i++) {
+            bitsResultAnd[i] = ((bitsS[i]!=0) && (bitsE[i]!=0))? 1:0;
+        }
+        if (checkBits(bitsResultAnd) != 0) {
+            return false;
+        }
+        int[] bitsResultOr = {0, 0, 0, 0};
+        for (int i = 0; i < 4; i++) {
+            bitsResultOr[i] = ((bitsS[i]!=0) || (bitsE[i]!=0))? 1:0;
+        }
+        if (checkBits(bitsResultOr) == 0) {
+            return true;
+        } else {
+
+            return fixLine(line,bitsS,bitsE);
+        }
+    }
+
+    private int checkBits(int[] bitsResult) {
+        int sum = 0;
+        for (int i = 0; i < 4; i++) {
+            sum += bitsResult[i];
+        }
+        return sum;
+    }
+
+    private int[] initBits(double x,double y) {
+        int[] bits = {0, 0, 0, 0};
+        double xMin = 20, xMax = screenWidth + 20, yMin = 20, yMax = screenHeight + 20;
+        if (y < yMin) {
+            bits[0] = 1;
+        }
+        if (x > xMax) {
+            bits[1] = 1;
+        }
+        if (y > yMax) {
+            bits[2] = 1;
+        }
+        if (x < xMin) {
+            bits[3] = 1;
+        }
+        return bits;
+    }
+
+    private boolean fixLine(Line2D.Double line ,int[] bitsS,int[] bitsE) {
+        Point2Di dL = new Point2Di(20,20);
+        Point2Di uL = new Point2Di(20,screenWidth + 20);
+        Point2Di uR = new Point2Di(screenHeight + 20,screenWidth + 20);
+        Point2Di dR = new Point2Di(screenHeight + 20,20);
+        Point2Di[] lines={dL,dR,uR,uL};
+        while (checkBits(bitsS) != 0) {
+            for (int i = 0; i < 4; i++) {
+                if (bitsS[i] == 1) {
+                    Point2Di new_p = findIntersection(new Point2Di((int)line.x1,(int)line.y1),
+                            new Point2Di((int)line.x2,(int)line.y2),lines[i],lines[(i+1)%4]);
+                    line.setLine(new_p.getX(),new_p.getY(),line.x2,line.y2);
+                    bitsS = initBits(line.x1,line.y1);
+                    if (checkBits(bitsS)!=0){
+                        return false;
+                    }
+                }
+            }
+        }
+        while (checkBits(bitsE) != 0) {
+            for (int i = 0; i < 4; i++) {
+                if (bitsE[i] == 1) {
+                    Point2Di new_p = findIntersection(new Point2Di((int)line.x1,(int)line.y1),
+                            new Point2Di((int)line.x2,(int)line.y2),lines[i],lines[(i+1)%4]);
+                    line.setLine(line.x1,line.y1,new_p.getX(),new_p.getY());
+                    bitsE = initBits(line.x2,line.y2);
+                    if (checkBits(bitsE)!=0){
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private Point2Di findIntersection(Point2Di p1x,Point2Di p1y,Point2Di p2x,Point2Di p2y) {
+        double a1 = p1y.getY() - p1x.getY();
+        double b1 = p1x.getX() - p1y.getX();
+        double c1 = a1 * (p1x.getX()) + b1 * (p1x.getY());
+        double a2 = p2y.getY() - p2x.getY();
+        double b2 = p2x.getX() - p2y.getX();
+        double c2 = a2 * (p2x.getX()) + b2 * (p2x.getY());
+        double determinant = a1 * b2 - a2 * b1;
+        double x = (b2 * c1 - b1 * c2) / determinant;
+        double y = (a1 * c2 - a2 * c1) / determinant;
+        return new Point2Di((int) x, (int) y);
+    }
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -244,4 +350,34 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     }
 
+    @Override
+    public void componentResized(ComponentEvent e) {
+        System.out.println("componentResized");
+        Component c = (Component)e.getSource();
+        Dimension newSize = c.getSize();
+        screenWidth = (int)newSize.getWidth()-40;
+        screenHeight = (int)newSize.getHeight()-40;
+        setSize(screenWidth + 40, screenHeight + 40);
+        center.setX((screenWidth/2)+MARGIN/2);
+        center.setY((screenHeight/2)+MARGIN/2);
+        view.setScreenWidth(screenWidth);
+        view.setScreenHeight(screenHeight);
+        reloadChanges();
+        this.repaint();
+    }
+
+    @Override
+    public void componentMoved(ComponentEvent e) {
+
+    }
+
+    @Override
+    public void componentShown(ComponentEvent e) {
+
+    }
+
+    @Override
+    public void componentHidden(ComponentEvent e) {
+
+    }
 }
