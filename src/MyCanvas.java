@@ -54,7 +54,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             this.clip = false;
             this.reloadChanges();
 
-            
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -261,9 +261,9 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     private boolean fixLine(Line2D.Double line ,int[] bitsS,int[] bitsE) {
         Point2Di dL = new Point2Di(20,20);
-        Point2Di uL = new Point2Di(20,screenWidth + 20);
-        Point2Di uR = new Point2Di(screenHeight + 20,screenWidth + 20);
-        Point2Di dR = new Point2Di(screenHeight + 20,20);
+        Point2Di uL = new Point2Di(20,20+screenHeight);
+        Point2Di uR = new Point2Di( 20+screenWidth,20+screenHeight);
+        Point2Di dR = new Point2Di(screenWidth + 20,20);
         Point2Di[] lines={dL,dR,uR,uL};
         while (checkBits(bitsS) != 0) {
             for (int i = 0; i < 4; i++) {
@@ -352,7 +352,6 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void componentResized(ComponentEvent e) {
-        System.out.println("componentResized");
         Component c = (Component)e.getSource();
         Dimension newSize = c.getSize();
         screenWidth = (int)newSize.getWidth()-40;
