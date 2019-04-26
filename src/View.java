@@ -110,7 +110,7 @@ public class View {
     public static void main(String[] args) throws Exception {
         // TODO Auto-generated method stub
         Scene scene = new Scene();
-        scene.readScn(new File("ex1.scn"));
+        scene.readScn(new File("example3d.scn"));
         Frame myFrame = new Frame("Exercise1");
         WindowAdapter myWindowAdapter = new WindowAdapter(){
             public void windowClosing(WindowEvent e) {

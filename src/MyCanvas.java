@@ -36,14 +36,11 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         try {
             // view and scene
             this.view = new View();
-            this.view.readViw(new File("ex1.viw"));
+            this.view.readViw(new File("example3d.viw"));
             this.scene = new Scene();
-            this.scene.readScn(new File("ex1.scn"));
+            this.scene.readScn(new File("example3d.scn"));
             this.tranforamtions = new Tranforamtions(view);
-            this.vectices= scene.getVerticeList();
-            this.edgeList = scene.getEdgeList();
-            screenWidth = view.getScreenWidth();
-            screenHeight = view.getScreenHeight();
+            load();
             setSize(screenWidth+ MARGIN, screenHeight + MARGIN);
             addMouseListener(this);
             addMouseMotionListener(this);
@@ -59,7 +56,12 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             System.out.println(e.getMessage());
         }
     }
-
+    public void load(){
+        this.vectices= scene.getVerticeList();
+        this.edgeList = scene.getEdgeList();
+        screenWidth = view.getScreenWidth();
+        screenHeight = view.getScreenHeight();
+    }
     public void paint(Graphics g) {
         g.drawRect(MARGIN/2, MARGIN/2, screenWidth, screenHeight);
         TrM = Matrix.multiply(CT, TT);
@@ -170,6 +172,9 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
                         e1.printStackTrace();
                     }
                 }
+                load();
+                reloadChanges();
+                repaint();
 
                 break;
             case 'r':

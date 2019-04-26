@@ -16,11 +16,12 @@ public class Scene {
     private View view;
 
     Scene(){
-        verticeList = new ArrayList<>();
-        edgeList = new ArrayList<>();
+
     }
 
     public void readScn(File scnFile) throws IOException {
+        verticeList = new ArrayList<>();
+        edgeList = new ArrayList<>();
         Point3D x;
         Line line;
         BufferedReader br = new BufferedReader(new FileReader(scnFile));

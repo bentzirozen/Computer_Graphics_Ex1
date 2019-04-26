@@ -13,12 +13,6 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        List<Point3D> vertexList = new ArrayList<>();
-        List<Line> edgeList = new ArrayList<>();
-        Scene scene = new Scene();
-        View view = new View();
-        view.readViw(new File(args[1]));
-        scene.readScn(new File(args[0]));
         Frame myFrame = new Frame("EX1");
         MyCanvas myCanvas = new MyCanvas();
         myFrame.add(myCanvas);
