@@ -188,6 +188,9 @@ public class Tranforamtions {
         tt= tt.multiply(tt,mv1);
         return tt;
     }
+    public void setView(View v){
+        this.v = v;
+    }
 
 
 }

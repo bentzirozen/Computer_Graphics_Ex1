@@ -56,6 +56,9 @@ public class Vector {
         double zRes = v1.getZ() * v2.getZ();
         return xRes + yRes + zRes;
     }
+    public static double vecDist(double dotProduct){
+        return Math.sqrt(dotProduct);
+    }
 
     public static Vector crossProduct(Vector v1, Vector v2) {
         double xRes = v1.getY() * v2.getZ() - v1.getZ() * v2.getY();

@@ -22,12 +22,13 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     private Tranforamtions tranforamtions;
     private int screenHeight,screenWidth;
     private Point3D center;
-    private Matrix VM1, P, CT, TT, T1, T2, AT, VM2,TrM;
+    private Matrix VM1, P, CT, TT, T1, T2, AT, VM2,TrM,LT;
     private boolean clip=false;
     private double px,py; //x and y after mouse press
     private double dx,dy; //x and y after mouse drag
     private char currentOper;
     private char axisRotate;
+    private int resized = 0;
 
     Point pStart, pEnd;
     boolean bFlag = false;
@@ -50,6 +51,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             this.axisRotate = 'z';
             this.clip = false;
             this.reloadChanges();
+            this.LT = new Matrix(4,4);
 
 
         } catch (Exception e) {
@@ -64,7 +66,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     }
     public void paint(Graphics g) {
         g.drawRect(MARGIN/2, MARGIN/2, screenWidth, screenHeight);
-        TrM = Matrix.multiply(CT, TT);
+        this.TrM = this.CT.multiply(this.TT).multiply(VM2).multiply(this.P).multiply(this.VM1);
         ArrayList<Point2Di> vertexesTag = new ArrayList<>();
         for (Point3D p : vectices) {
             Vector vec = Tranforamtions.matrixToVector(Matrix.multiply(TrM,Tranforamtions.vectorToMatrix
@@ -203,6 +205,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         dx = e.getX();
         dy = e.getY();
         oper();
+        LT= CT;
         this.repaint();
     }
     private void reloadChanges(){
@@ -210,11 +213,12 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         this.TT = new Matrix(4,4);
         VM1 = tranforamtions.mv1(view.getCameraPos(),view.getCameraLookAt(),view.getCameraUpDirection());
         P = tranforamtions.projection();
+        createMv2Matrix();
+    }
+    private void createMv2Matrix() {
         T1 = tranforamtions.t1();
         T2 = tranforamtions.t2();
         VM2 = Matrix.multiply(T2,Matrix.multiply(tranforamtions.s(),T1));
-        this.TrM = Matrix.multiply(VM2, (Matrix.multiply(P, Matrix.multiply(CT, (Matrix.multiply(TT, VM1))))));
-        TT = TrM;
     }
     private boolean clipping(Line2D.Double line) {
         int[] bitsS = initBits(line.x1,line.y1);
@@ -326,8 +330,8 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        TT = TrM;
-        CT = new Matrix(4,4);
+        this.TT = this.LT.multiply(this.TT);
+        this.CT = new Matrix(4,4);
         this.repaint();
     }
 
@@ -357,18 +361,24 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void componentResized(ComponentEvent e) {
-        Component c = (Component)e.getSource();
-        Dimension newSize = c.getSize();
-        screenWidth = (int)newSize.getWidth()-40;
-        screenHeight = (int)newSize.getHeight()-40;
-        setSize(screenWidth + 40, screenHeight + 40);
-        center.setX((screenWidth/2)+MARGIN/2);
-        center.setY((screenHeight/2)+MARGIN/2);
-        view.setScreenWidth(screenWidth);
-        view.setScreenHeight(screenHeight);
-        reloadChanges();
-        this.repaint();
+        if(resized>6) {
+            Component c = (Component) e.getSource();
+            Dimension newSize = c.getSize();
+            screenWidth = (int) newSize.getWidth() - 40;
+            screenHeight = (int) newSize.getHeight() - 40;
+            setSize(screenWidth + 40, screenHeight + 40);
+            center.setX((screenWidth / 2) + MARGIN / 2);
+            center.setY((screenHeight / 2) + MARGIN / 2);
+            view.setScreenWidth(screenWidth);
+            view.setScreenHeight(screenHeight);
+            tranforamtions.setView(view);
+            createMv2Matrix();
+            repaint();
+        }
+        resized++;
     }
+
+
 
     @Override
     public void componentMoved(ComponentEvent e) {
