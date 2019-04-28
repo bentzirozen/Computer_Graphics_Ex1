@@ -14,7 +14,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Frame myFrame = new Frame("EX1");
-        MyCanvas myCanvas = new MyCanvas();
+        MyCanvas myCanvas = new MyCanvas(myFrame);
         myFrame.add(myCanvas);
 
         WindowAdapter myWindowAdapter = new WindowAdapter(){

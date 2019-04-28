@@ -29,11 +29,12 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     private char currentOper;
     private char axisRotate;
     private int resized = 0;
+    Frame frame;
 
     Point pStart, pEnd;
     boolean bFlag = false;
 
-    public MyCanvas() {
+    public MyCanvas(Frame frame) {
         try {
             // view and scene
             this.view = new View();
@@ -41,8 +42,8 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             this.scene = new Scene();
             this.scene.readScn(new File("example3d.scn"));
             this.tranforamtions = new Tranforamtions(view);
+            this.frame = frame;
             load();
-            setSize(screenWidth+ MARGIN, screenHeight + MARGIN);
             addMouseListener(this);
             addMouseMotionListener(this);
             addKeyListener(this);
@@ -63,6 +64,12 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         this.edgeList = scene.getEdgeList();
         screenWidth = view.getScreenWidth();
         screenHeight = view.getScreenHeight();
+        Dimension d = new Dimension();
+        d.width = screenWidth+MARGIN;
+        d.height = screenHeight+MARGIN;
+        this.setPreferredSize(d);
+        frame.pack();
+
     }
     public void paint(Graphics g) {
         g.drawRect(MARGIN/2, MARGIN/2, screenWidth, screenHeight);
@@ -146,7 +153,6 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
                 Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
     }
-
     @Override
     public void keyTyped(KeyEvent e) {
         char key = Character.toLowerCase(e.getKeyChar());
@@ -366,7 +372,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             Dimension newSize = c.getSize();
             screenWidth = (int) newSize.getWidth() - 40;
             screenHeight = (int) newSize.getHeight() - 40;
-            setSize(screenWidth + 40, screenHeight + 40);
+            setSize(screenWidth + MARGIN, screenHeight + MARGIN);
             center.setX((screenWidth / 2) + MARGIN / 2);
             center.setY((screenHeight / 2) + MARGIN / 2);
             view.setScreenWidth(screenWidth);
