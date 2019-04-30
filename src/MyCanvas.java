@@ -48,11 +48,12 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             addMouseMotionListener(this);
             addKeyListener(this);
             addComponentListener(this);
+
             this.center = new Point3D((screenWidth/2)+MARGIN/2,(screenHeight/2)+MARGIN/2,0);
             this.axisRotate = 'z';
             this.clip = false;
-            this.reloadChanges();
-            this.LT = new Matrix(4,4);
+            setSize(screenWidth+MARGIN,screenHeight+MARGIN);
+            reloadChanges();
 
 
         } catch (Exception e) {
@@ -140,8 +141,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         double distEnd = Math.hypot(dx-center.getX(),dy-center.getY());
         double scaleParameter = distEnd / distStart;
         CT = tranforamtions.Scale(scaleParameter, scaleParameter, scaleParameter);
-        CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
-                Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
+        createCT();
     }
     private void doRotation(){
         Vector startVec = new Vector(px-center.getX(),py-center.getY(),0);
@@ -150,8 +150,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         double angleEnd = Vector.angle(endVec);
         double angleFinish = angleEnd - angleStart;
         CT = tranforamtions.Rotation(angleFinish, axisRotate);
-        CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
-                Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
+        createCT();
     }
     @Override
     public void keyTyped(KeyEvent e) {
@@ -336,8 +335,8 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        this.TT = this.LT.multiply(this.TT);
-        this.CT = new Matrix(4,4);
+        TT = Matrix.multiply(CT, TT);
+        CT = new Matrix(4,4);
         this.repaint();
     }
 
@@ -364,26 +363,33 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     public void keyReleased(KeyEvent e) {
 
     }
+    private void createCT() {
+        Point3D p_look = view.getCameraLookAt();
+        Point3D p_pos = view.getCameraPos();
+        Vector LookAt = new Vector(p_look.getX(), p_look.getY(), p_look.getZ());
+        Vector Position = new Vector(p_pos.getX(), p_pos.getY(), p_pos.getZ());
+        Vector sub = Vector.sub(LookAt, Position);
+        double d = Vector.vecDist(Vector.dotProduct(sub,sub));
+        Matrix tmp = new Matrix(4,4);
+        tmp.assignElement(d,2,3);
+        CT = Matrix.multiply(CT, tmp);
+        tmp.assignElement(-d,2,3);
+        CT = Matrix.multiply(tmp, CT);
+    }
+
 
     @Override
     public void componentResized(ComponentEvent e) {
-        if(resized>6) {
-            Component c = (Component) e.getSource();
-            Dimension newSize = c.getSize();
-            screenWidth = (int) newSize.getWidth() - 40;
-            screenHeight = (int) newSize.getHeight() - 40;
-            setSize(screenWidth + MARGIN, screenHeight + MARGIN);
-            center.setX((screenWidth / 2) + MARGIN / 2);
-            center.setY((screenHeight / 2) + MARGIN / 2);
-            view.setScreenWidth(screenWidth);
-            view.setScreenHeight(screenHeight);
-            tranforamtions.setView(view);
-            createMv2Matrix();
-            repaint();
+        Component vp = e.getComponent();
+        Dimension dim = vp.getSize();
+        screenWidth = dim.width - 40;
+        screenHeight = dim.height - 40;
+        center.setX((screenWidth / 2) + MARGIN / 2);
+        center.setY((screenHeight / 2) + MARGIN / 2);
+        view.setScreenWidth(screenWidth);
+        view.setScreenHeight(screenHeight);
+        tranforamtions.setView(view);
         }
-        resized++;
-    }
-
 
 
     @Override
