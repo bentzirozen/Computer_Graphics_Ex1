@@ -201,6 +201,8 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             case 'r':
                 load(true);
                 reloadChanges();
+                this.clip = false;
+                this.axisRotate = 'z';
                 repaint();
                 break;
             case 'x':
