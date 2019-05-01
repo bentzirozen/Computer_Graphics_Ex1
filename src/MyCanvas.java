@@ -12,7 +12,7 @@ import java.util.List;
 
 import static java.lang.System.exit;
 
-public class MyCanvas extends Canvas implements KeyListener, MouseListener, MouseMotionListener,ComponentListener  {
+public class MyCanvas extends Canvas implements KeyListener, MouseListener, MouseMotionListener  {
     private static final int MARGIN = 40;
     private static final long serialVersionUID = 1L;
     private ArrayList<Point3D> vectices = new ArrayList<>();
@@ -22,13 +22,12 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     private Tranforamtions tranforamtions;
     private int screenHeight,screenWidth,origScreenHeight,origScreenWidth;
     private Point3D center;
-    private Matrix VM1, P, CT, TT, T1, T2, AT, VM2,TrM,LT;
+    private Matrix VM1, P, CT, TT, T1, T2, AT, VM2,FT;
     private boolean clip=false;
     private double px,py; //x and y after mouse press
     private double dx,dy; //x and y after mouse drag
     private char currentOper;
     private char axisRotate;
-    private int resized = 0;
     Frame frame;
 
     Point pStart, pEnd;
@@ -38,9 +37,9 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         try {
             // view and scene
             this.view = new View();
-            this.view.readViw(new File("example3d.viw"));
+            this.view.readViw(new File("ex1.viw"));
             this.scene = new Scene();
-            this.scene.readScn(new File("example3d.scn"));
+            this.scene.readScn(new File("ex1.scn"));
             this.tranforamtions = new Tranforamtions(view);
             origScreenWidth = view.getScreenWidth();
             origScreenHeight = view.getScreenHeight();
@@ -49,7 +48,21 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             addMouseListener(this);
             addMouseMotionListener(this);
             addKeyListener(this);
-            addComponentListener(this);
+            addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    Component comp = e.getComponent();
+                    Dimension dim = comp.getSize();
+                    screenWidth = dim.width - 40;
+                    screenHeight = dim.height - 40;
+                    center.setX((screenWidth / 2) + MARGIN / 2);
+                    center.setY((screenHeight / 2) + MARGIN / 2);
+                    view.setScreenWidth(screenWidth);
+                    view.setScreenHeight(screenHeight);
+                    tranforamtions.setView(view);
+                    reloadChanges();
+                }
+            });
             this.center = new Point3D((screenWidth/2)+MARGIN/2,(screenHeight/2)+MARGIN/2,0);
             this.axisRotate = 'z';
             this.clip = false;
@@ -81,10 +94,10 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     public void paint(Graphics g) {
         this.requestFocus();
         g.drawRect(MARGIN/2, MARGIN/2, screenWidth, screenHeight);
-        this.TrM = VM2.multiply(this.P).multiply(CT).multiply(this.TT).multiply(this.VM1);
+        this.FT = VM2.multiply(this.P).multiply(CT).multiply(this.TT).multiply(this.VM1);
         ArrayList<Point2Di> vertexesTag = new ArrayList<>();
         for (Point3D p : vectices) {
-            Vector vec = Tranforamtions.matrixToVector(Matrix.multiply(TrM,Tranforamtions.vectorToMatrix
+            Vector vec = Tranforamtions.matrixToVector(Matrix.multiply(FT,Tranforamtions.vectorToMatrix
                     (Tranforamtions.vertexToVector(p))));
             vertexesTag.add(new Point2Di(vec.getX(),vec.getY()));
         }
@@ -124,6 +137,10 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             return 's';
         }
     }
+
+    /**
+     * By where pressed , do an action
+     */
     private void oper(){
         switch(this.currentOper){
             case 't':
@@ -149,10 +166,10 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         double distEnd = Math.hypot(dx-center.getX(),dy-center.getY());
         double scaleParameter = distEnd / distStart;
         CT = tranforamtions.Scale(scaleParameter, scaleParameter, scaleParameter);
-       // CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
-            //  Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
         createCT();
     }
+
+
     private void doRotation(){
         Vector startVec = new Vector(px-center.getX(),py-center.getY(),0);
         Vector endVec = new Vector(dx-center.getX(),dy-center.getY(),0);
@@ -160,8 +177,6 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         double angleEnd = Vector.angle(endVec);
         double angleFinish = angleStart - angleEnd;
         CT = tranforamtions.Rotation(angleFinish, axisRotate);
-      // CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
-        //    Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
         createCT();
     }
     @Override
@@ -226,12 +241,19 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     }
 
     @Override
+    /**
+     * get x and y after drag and find which operation to do
+     */
     public void mouseDragged(MouseEvent e) {
         dx = e.getX();
         dy = e.getY();
         oper();
         this.repaint();
     }
+
+    /**
+     * make all Matrixes again with current data
+     */
     private void reloadChanges(){
         VM1 = tranforamtions.mv1(view.getCameraPos(),view.getCameraLookAt(),view.getCameraUpDirection());
         P = tranforamtions.projection();
@@ -239,6 +261,12 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         T2 = tranforamtions.t2();
         VM2 = Matrix.multiply(T2,Matrix.multiply(tranforamtions.s(),T1));
     }
+
+    /**
+     * line clipping by cohen's algorithm
+     * @param line the line to check if clips
+     * @return clip or not
+     */
     private boolean clipping(Line2D.Double line) {
         int[] bitsS = initBits(line.x1,line.y1);
         int[] bitsE = initBits(line.x2,line.y2);
@@ -287,6 +315,9 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         return bits;
     }
 
+    /**
+     * check if need to fix the line
+     */
     private boolean fixLine(Line2D.Double line ,int[] bitsS,int[] bitsE) {
         Point2Di dL = new Point2Di(20,20);
         Point2Di uL = new Point2Di(20,20+screenHeight);
@@ -379,6 +410,10 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     public void keyReleased(KeyEvent e) {
 
     }
+
+    /**
+     * creates net CT matrix by values
+     */
     private void createCT() {
         Point3D p_look = view.getCameraLookAt();
         Point3D p_pos = view.getCameraPos();
@@ -391,40 +426,5 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         CT = Matrix.multiply(CT, tmp);
         tmp.assignElement(-d,2,3);
         CT = Matrix.multiply(tmp, CT);
-    }
-
-
-    @Override
-    public void componentResized(ComponentEvent e) {
-        if(resized>5) {
-            Component vp = e.getComponent();
-            Dimension dim = vp.getSize();
-            screenWidth = dim.width - 40;
-            screenHeight = dim.height - 40;
-            center.setX((screenWidth / 2) + MARGIN / 2);
-            center.setY((screenHeight / 2) + MARGIN / 2);
-            view.setScreenWidth(screenWidth);
-            view.setScreenHeight(screenHeight);
-            tranforamtions.setView(view);
-
-            reloadChanges();
-        }
-        resized++;
-    }
-
-
-    @Override
-    public void componentMoved(ComponentEvent e) {
-
-    }
-
-    @Override
-    public void componentShown(ComponentEvent e) {
-
-    }
-
-    @Override
-    public void componentHidden(ComponentEvent e) {
-
     }
 }
