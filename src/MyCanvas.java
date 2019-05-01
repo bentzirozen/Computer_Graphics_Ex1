@@ -38,9 +38,9 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         try {
             // view and scene
             this.view = new View();
-            this.view.readViw(new File("example3d.viw"));
+            this.view.readViw(new File("ex1.viw"));
             this.scene = new Scene();
-            this.scene.readScn(new File("example3d.scn"));
+            this.scene.readScn(new File("ex1.scn"));
             this.tranforamtions = new Tranforamtions(view);
             this.frame = frame;
             load();
@@ -61,6 +61,8 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         }
     }
     public void load(){
+        this.CT = new Matrix(4,4);
+        this.TT = new Matrix(4,4);
         this.vectices= scene.getVerticeList();
         this.edgeList = scene.getEdgeList();
         screenWidth = view.getScreenWidth();
@@ -74,7 +76,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     }
     public void paint(Graphics g) {
         g.drawRect(MARGIN/2, MARGIN/2, screenWidth, screenHeight);
-        this.TrM = this.CT.multiply(this.TT).multiply(VM2).multiply(this.P).multiply(this.VM1);
+        this.TrM = VM2.multiply(this.P).multiply(CT).multiply(this.TT).multiply(this.VM1);
         ArrayList<Point2Di> vertexesTag = new ArrayList<>();
         for (Point3D p : vectices) {
             Vector vec = Tranforamtions.matrixToVector(Matrix.multiply(TrM,Tranforamtions.vectorToMatrix
@@ -134,13 +136,16 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     }
 
     private void doTranslation() {
-        CT = tranforamtions.Translation(dx - px, dy - py,0);
+        CT = tranforamtions.Translation((dx - px) * ((view.getRightBound() - view.getLeftBound()) / screenWidth),
+                (dy - py) * (-((view.getTopBound() - view.getBottomBound()) / screenHeight)),0);
     }
     private void doScale(){
         double distStart = Math.hypot(px-center.getX(), py-center.getY());
         double distEnd = Math.hypot(dx-center.getX(),dy-center.getY());
         double scaleParameter = distEnd / distStart;
         CT = tranforamtions.Scale(scaleParameter, scaleParameter, scaleParameter);
+       // CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
+            //  Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
         createCT();
     }
     private void doRotation(){
@@ -148,8 +153,10 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         Vector endVec = new Vector(dx-center.getX(),dy-center.getY(),0);
         double angleStart = Vector.angle(startVec);
         double angleEnd = Vector.angle(endVec);
-        double angleFinish = angleEnd - angleStart;
+        double angleFinish = angleStart - angleEnd;
         CT = tranforamtions.Rotation(angleFinish, axisRotate);
+      // CT = Matrix.multiply(tranforamtions.Translation(center.getX(), center.getY(), 0),
+        //    Matrix.multiply(CT, tranforamtions.Translation(-center.getX(), -center.getY(), 0)));
         createCT();
     }
     @Override
@@ -185,6 +192,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
                 break;
             case 'r':
+                load();
                 reloadChanges();
                 repaint();
                 break;
@@ -210,17 +218,11 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         dx = e.getX();
         dy = e.getY();
         oper();
-        LT= CT;
         this.repaint();
     }
     private void reloadChanges(){
-        this.CT = new Matrix(4,4);
-        this.TT = new Matrix(4,4);
         VM1 = tranforamtions.mv1(view.getCameraPos(),view.getCameraLookAt(),view.getCameraUpDirection());
         P = tranforamtions.projection();
-        createMv2Matrix();
-    }
-    private void createMv2Matrix() {
         T1 = tranforamtions.t1();
         T2 = tranforamtions.t2();
         VM2 = Matrix.multiply(T2,Matrix.multiply(tranforamtions.s(),T1));
@@ -335,6 +337,8 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        dx = e.getX();
+        dy = e.getY();
         TT = Matrix.multiply(CT, TT);
         CT = new Matrix(4,4);
         this.repaint();
@@ -389,7 +393,8 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         view.setScreenWidth(screenWidth);
         view.setScreenHeight(screenHeight);
         tranforamtions.setView(view);
-        }
+        reloadChanges();
+    }
 
 
     @Override
