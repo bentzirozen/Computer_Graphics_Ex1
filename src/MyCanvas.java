@@ -38,15 +38,14 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         try {
             // view and scene
             this.view = new View();
-            this.view.readViw(new File("ex1.viw"));
+            this.view.readViw(new File("example3d.viw"));
             this.scene = new Scene();
-            this.scene.readScn(new File("ex1.scn"));
+            this.scene.readScn(new File("example3d.scn"));
             this.tranforamtions = new Tranforamtions(view);
             origScreenWidth = view.getScreenWidth();
             origScreenHeight = view.getScreenHeight();
             this.frame = frame;
             load(true);
-
             addMouseListener(this);
             addMouseMotionListener(this);
             addKeyListener(this);
@@ -54,7 +53,6 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             this.center = new Point3D((screenWidth/2)+MARGIN/2,(screenHeight/2)+MARGIN/2,0);
             this.axisRotate = 'z';
             this.clip = false;
-            setSize(screenWidth+MARGIN,screenHeight+MARGIN);
             reloadChanges();
 
 
@@ -79,9 +77,9 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
         d.height = screenHeight+MARGIN;
         this.setPreferredSize(d);
         frame.pack();
-
     }
     public void paint(Graphics g) {
+        this.requestFocus();
         g.drawRect(MARGIN/2, MARGIN/2, screenWidth, screenHeight);
         this.TrM = VM2.multiply(this.P).multiply(CT).multiply(this.TT).multiply(this.VM1);
         ArrayList<Point2Di> vertexesTag = new ArrayList<>();
@@ -176,27 +174,32 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
                 this.repaint();
                 break;
             case 'l':
-                JFileChooser chooser = new JFileChooser();
-                chooser.showOpenDialog(null);
-                String path = chooser.getSelectedFile().getAbsolutePath();
-                String extension = path.substring(path.lastIndexOf('.') + 1);
-                if (extension.equals("scn")) {
-                    try {
-                        this.scene.readScn(new File(path));
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                } else if (extension.equals("viw")) {
-                    try {
-                        this.view.readViw(new File(path));
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                JFileChooser jfc = new JFileChooser();
+                String workingDir = System.getProperty("user.dir");
+                jfc.setCurrentDirectory(new File(workingDir));
+                int returnValue = jfc.showOpenDialog(jfc.getParent());
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    String path = jfc.getSelectedFile().getAbsolutePath();
+                    String extension = path.substring(path.lastIndexOf('.') + 1);
+                    if (extension.equals("scn")) {
+                        try {
+                            this.scene.readScn(new File(path));
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    } else if (extension.equals("viw")) {
+                        try {
+                            this.view.readViw(new File(path));
+                            origScreenWidth = view.getScreenWidth();
+                            origScreenHeight = view.getScreenHeight();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
                     }
                 }
-                load(false);
+                load(true);
                 reloadChanges();
                 repaint();
-
                 break;
             case 'r':
                 load(true);
@@ -393,16 +396,20 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
 
     @Override
     public void componentResized(ComponentEvent e) {
-        Component vp = e.getComponent();
-        Dimension dim = vp.getSize();
-        screenWidth = dim.width - 40;
-        screenHeight = dim.height - 40;
-        center.setX((screenWidth / 2) + MARGIN / 2);
-        center.setY((screenHeight / 2) + MARGIN / 2);
-        view.setScreenWidth(screenWidth);
-        view.setScreenHeight(screenHeight);
-        tranforamtions.setView(view);
-        reloadChanges();
+        if(resized>5) {
+            Component vp = e.getComponent();
+            Dimension dim = vp.getSize();
+            screenWidth = dim.width - 40;
+            screenHeight = dim.height - 40;
+            center.setX((screenWidth / 2) + MARGIN / 2);
+            center.setY((screenHeight / 2) + MARGIN / 2);
+            view.setScreenWidth(screenWidth);
+            view.setScreenHeight(screenHeight);
+            tranforamtions.setView(view);
+
+            reloadChanges();
+        }
+        resized++;
     }
 
 
