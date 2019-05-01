@@ -20,7 +20,7 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
     private Scene scene;
     private View view;
     private Tranforamtions tranforamtions;
-    private int screenHeight,screenWidth;
+    private int screenHeight,screenWidth,origScreenHeight,origScreenWidth;
     private Point3D center;
     private Matrix VM1, P, CT, TT, T1, T2, AT, VM2,TrM,LT;
     private boolean clip=false;
@@ -42,13 +42,15 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             this.scene = new Scene();
             this.scene.readScn(new File("ex1.scn"));
             this.tranforamtions = new Tranforamtions(view);
+            origScreenWidth = view.getScreenWidth();
+            origScreenHeight = view.getScreenHeight();
             this.frame = frame;
-            load();
+            load(true);
+
             addMouseListener(this);
             addMouseMotionListener(this);
             addKeyListener(this);
             addComponentListener(this);
-
             this.center = new Point3D((screenWidth/2)+MARGIN/2,(screenHeight/2)+MARGIN/2,0);
             this.axisRotate = 'z';
             this.clip = false;
@@ -60,13 +62,18 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
             System.out.println(e.getMessage());
         }
     }
-    public void load(){
+    public void load(boolean is_reset){
         this.CT = new Matrix(4,4);
         this.TT = new Matrix(4,4);
         this.vectices= scene.getVerticeList();
         this.edgeList = scene.getEdgeList();
-        screenWidth = view.getScreenWidth();
-        screenHeight = view.getScreenHeight();
+        if(!is_reset) {
+            screenWidth = view.getScreenWidth();
+            screenHeight = view.getScreenHeight();
+        }else{
+            screenWidth = origScreenWidth;
+            screenHeight = origScreenHeight;
+        }
         Dimension d = new Dimension();
         d.width = screenWidth+MARGIN;
         d.height = screenHeight+MARGIN;
@@ -186,13 +193,13 @@ public class MyCanvas extends Canvas implements KeyListener, MouseListener, Mous
                         e1.printStackTrace();
                     }
                 }
-                load();
+                load(false);
                 reloadChanges();
                 repaint();
 
                 break;
             case 'r':
-                load();
+                load(true);
                 reloadChanges();
                 repaint();
                 break;
